@@ -1,0 +1,17 @@
+header:
+  stamp:
+    secs: 0
+    nsecs: 0
+  seq: 0
+  frame_id: short_camera
+child_frame_id: radar
+transform:
+  rotation:
+    x: 0.4850053895285141
+    y: -0.4845663009218615
+    z: 0.5145314679105261
+    w: 0.5149977093823209
+  translation:
+    x: -0.09990032790304502
+    y: 0.2661304481726501
+    z: 0.09431070480220403
