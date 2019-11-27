@@ -193,7 +193,7 @@ Status NewController::ComputeControlCommand(
   double speed_controller_input = 0.0;
   /****************************************************************************/
   /*****请老师在此处补全计算speed_controller_input代码*****/
-  //speed_controller_input = speed_offset + debug->speed_error();
+  speed_controller_input = speed_offset + debug->speed_error();
   /****************************************************************************/
 
 
@@ -204,7 +204,7 @@ Status NewController::ComputeControlCommand(
   /*（10）加速度=速度补偿+预览加速度+坡度补偿；*/
   /****************************************************************************/
   /*****请老师在此处补全计算acceleration_cmd代码*****/ 
-  //double acceleration_cmd =acceleration_cmd_closeloop + debug->preview_acceleration_reference() ;
+  double acceleration_cmd =acceleration_cmd_closeloop + debug->preview_acceleration_reference() ;
   /****************************************************************************/
 
 
@@ -289,10 +289,10 @@ Status NewController::ComputeControlCommand(
 
   /****************************************************************************/
   /*****请老师在此处补全计算cmd控制命令代码*****/
-  //cmd->set_throttle(throttle_cmd);
-  //cmd->set_brake(brake_cmd);
+  cmd->set_throttle(throttle_cmd);
+  cmd->set_brake(brake_cmd);
   //对于有些车辆只支持加速度接口控制，也可将最终加速度补偿值直接下发至canbus，作为控制命令
-  //cmd->set_acceleration(acceleration_cmd);
+  cmd->set_acceleration(acceleration_cmd);
   /****************************************************************************/
 
 
@@ -373,8 +373,8 @@ TrajectoryPoint=path data+speed data
   debug->set_current_station(s_matched);
   /****************************************************************************/
   /*****请老师在此处补全station_error和speed_error代码*****/
-  //debug->set_station_error(reference_point.path_point().s() - s_matched);
-  //debug->set_speed_error(reference_point.v() - s_dot_matched);
+  debug->set_station_error(reference_point.path_point().s() - s_matched);
+  debug->set_speed_error(reference_point.v() - s_dot_matched);
   /****************************************************************************/
 
   debug->set_preview_acceleration_reference(preview_point.a());
