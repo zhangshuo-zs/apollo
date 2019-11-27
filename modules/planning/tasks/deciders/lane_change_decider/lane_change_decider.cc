@@ -57,6 +57,12 @@ Status LaneChangeDecider::Process(
                           ->mutable_change_lane();
   double now = Clock::NowInSeconds();
 
+  prev_status->set_is_clear_to_change_lane(false);
+  if (current_reference_line_info->IsChangeLanePath()) {
+    prev_status->set_is_clear_to_change_lane(
+        IsClearToChangeLane(current_reference_line_info));
+  }
+
   if (!prev_status->has_status()) {
     UpdateStatus(now, ChangeLaneStatus::CHANGE_LANE_FINISHED,
                  GetCurrentPathId(*reference_line_info));
@@ -280,7 +286,7 @@ bool LaneChangeDecider::IsClearToChangeLane(
     }
 
     if (reference_line_info->IsChangeLanePath()) {
-      constexpr double kLateralShift = 2.5;
+      static constexpr double kLateralShift = 2.5;
       if (end_l < -kLateralShift || start_l > kLateralShift) {
         continue;
       }
@@ -304,13 +310,13 @@ bool LaneChangeDecider::IsClearToChangeLane(
     }
 
     // TODO(All) move to confs
-    constexpr double kSafeTimeOnSameDirection = 3.0;
-    constexpr double kSafeTimeOnOppositeDirection = 5.0;
-    constexpr double kForwardMinSafeDistanceOnSameDirection = 3.0;
-    constexpr double kBackwardMinSafeDistanceOnSameDirection = 4.0;
-    constexpr double kForwardMinSafeDistanceOnOppositeDirection = 50.0;
-    constexpr double kBackwardMinSafeDistanceOnOppositeDirection = 1.0;
-    constexpr double kDistanceBuffer = 0.5;
+    static constexpr double kSafeTimeOnSameDirection = 3.0;
+    static constexpr double kSafeTimeOnOppositeDirection = 5.0;
+    static constexpr double kForwardMinSafeDistanceOnSameDirection = 3.0;
+    static constexpr double kBackwardMinSafeDistanceOnSameDirection = 4.0;
+    static constexpr double kForwardMinSafeDistanceOnOppositeDirection = 50.0;
+    static constexpr double kBackwardMinSafeDistanceOnOppositeDirection = 1.0;
+    static constexpr double kDistanceBuffer = 0.5;
 
     double kForwardSafeDistance = 0.0;
     double kBackwardSafeDistance = 0.0;

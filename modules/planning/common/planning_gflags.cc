@@ -93,10 +93,10 @@ DEFINE_bool(enable_scenario_park_and_go, true,
 DEFINE_bool(enable_scenario_pull_over, false,
             "enable pull-over scenario in planning");
 
-DEFINE_bool(enable_scenario_emergency_pull_over, false,
+DEFINE_bool(enable_scenario_emergency_pull_over, true,
             "enable emregency-pull-over scenario in planning");
 
-DEFINE_bool(enable_scenario_emergency_stop, false,
+DEFINE_bool(enable_scenario_emergency_stop, true,
             "enable emregency-stop scenario in planning");
 
 DEFINE_bool(enable_scenario_side_pass_multiple_parked_obstacles, true,
@@ -574,9 +574,6 @@ DEFINE_double(open_space_standstill_acceleration, 0.0,
               "(unit: meter/sec^2) for open space stand still at destination");
 
 DEFINE_bool(enable_cuda, false, "True to enable cuda parallel implementation.");
-
-DEFINE_bool(enable_nonscenario_side_pass, false,
-            "True to enable side pass without scenario management");
 
 DEFINE_bool(enable_dp_reference_speed, true,
             "True to penalize dp result towards default cruise speed");
