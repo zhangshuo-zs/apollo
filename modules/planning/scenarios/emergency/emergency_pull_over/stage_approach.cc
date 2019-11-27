@@ -39,6 +39,7 @@ namespace emergency_pull_over {
 
 using apollo::common::TrajectoryPoint;
 using apollo::common::VehicleConfigHelper;
+using apollo::common::VehicleSignal;
 
 EmergencyPullOverStageApproach::EmergencyPullOverStageApproach(
     const ScenarioConfig::StageConfig& config)
@@ -51,10 +52,14 @@ Stage::StageStatus EmergencyPullOverStageApproach::Process(
 
   scenario_config_.CopyFrom(GetContext()->scenario_config);
 
+  auto& reference_line_info = frame->mutable_reference_line_info()->front();
+
+  // set vehicle signal
+  reference_line_info.SetTurnSignal(VehicleSignal::TURN_RIGHT);
+
   double stop_line_s = 0.0;
 
   // add a stop fence
-  const auto& reference_line_info = frame->reference_line_info().front();
   const auto& pull_over_status =
       PlanningContext::Instance()->planning_status().pull_over();
   if (pull_over_status.has_position() && pull_over_status.position().has_x() &&
@@ -95,8 +100,8 @@ Stage::StageStatus EmergencyPullOverStageApproach::Process(
                                           .vehicle_param()
                                           .max_abs_speed_when_stopped();
     ADEBUG << "adc_speed[" << adc_speed << "] distance[" << distance << "]";
-    constexpr double kStopSpeedTolerance = 0.4;
-    constexpr double kStopDistanceTolerance = 3.0;
+    static constexpr double kStopSpeedTolerance = 0.4;
+    static constexpr double kStopDistanceTolerance = 3.0;
     if (adc_speed <= max_adc_stop_speed + kStopSpeedTolerance &&
         std::fabs(distance) <= kStopDistanceTolerance) {
       return FinishStage();

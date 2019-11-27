@@ -48,49 +48,51 @@ bool MPCControllerSubmodule::Init() {
                   FLAGS_mpc_controller_conf_file;
     return false;
   }
-  // load calibration table
-  if (!cyber::common::GetProtoFromFile(FLAGS_calibration_table_file,
-                                       &calibration_table_)) {
-    AERROR << "Unable to load calibration table file: " +
-                  FLAGS_calibration_table_file;
+
+  if (!mpc_controller_.Init(&mpc_controller_conf_).ok()) {
+    monitor_logger_buffer_.ERROR(
+        "Control init MPC controller failed! Stopping...");
     return false;
   }
-  mpc_controller_conf_.mutable_mpc_controller_conf()
-      ->set_allocated_calibration_table(&calibration_table_);
+
+  control_core_writer_ =
+      node_->CreateWriter<ControlCommand>(FLAGS_control_core_command_topic);
   return true;
 }
 
 bool MPCControllerSubmodule::Proc(
     const std::shared_ptr<Preprocessor>& preprocessor_status) {
-  ControlCommand control_command;
-  local_view_ = preprocessor_status->mutable_local_view();
+  ControlCommand control_core_command;
+  ADEBUG << "MPC controller submodule started ....";
 
   // skip produce control command when estop for MPC controller
   if (preprocessor_status->estop()) {
     return true;
   }
 
-  Status status = ProduceControlCommand(&control_command);
+  Status status = ProduceControlCoreCommand(preprocessor_status->local_view(),
+                                            &control_core_command);
   AERROR_IF(!status.ok()) << "Failed to produce control command:"
                           << status.error_message();
-  control_command_writer_->Write(
-      std::make_shared<ControlCommand>(control_command));
+
+  common::util::FillHeader(Name(), &control_core_command);
+
+  control_core_writer_->Write(control_core_command);
   return true;
 }
 
-Status MPCControllerSubmodule::ProduceControlCommand(
-    ControlCommand* control_command) {
-  std::lock_guard<std::mutex> lock(mutex_);
-
-  if (local_view_->mutable_chassis()->driving_mode() ==
-      Chassis::COMPLETE_MANUAL) {
+Status MPCControllerSubmodule::ProduceControlCoreCommand(
+    const LocalView& local_view, ControlCommand* control_core_command) {
+  if (local_view.chassis().driving_mode() == Chassis::COMPLETE_MANUAL) {
     mpc_controller_.Reset();
     AINFO_EVERY(100) << "Reset Controllers in Manual Mode";
   }
 
   Status status = mpc_controller_.ComputeControlCommand(
-      local_view_->mutable_localization(), local_view_->mutable_chassis(),
-      local_view_->mutable_trajectory(), control_command);
+      &local_view.localization(), &local_view.chassis(),
+      &local_view.trajectory(), control_core_command);
+
+  ADEBUG << "MPC controller submodule finished.";
 
   return status;
 }
